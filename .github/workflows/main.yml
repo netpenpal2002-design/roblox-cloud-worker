@@ -1,0 +1,24 @@
+name: Windows Runner Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Show Windows environment
+        shell: pwsh
+        run: |
+          Write-Host "WINDOWS RUNNER ONLINE"
+          Write-Host "Computer: $env:COMPUTERNAME"
+          Write-Host "OS:"
+          Get-CimInstance Win32_OperatingSystem |
+            Select-Object Caption, Version, OSArchitecture
+          Write-Host "CPU:"
+          Get-CimInstance Win32_Processor |
+            Select-Object Name, NumberOfCores
+          Write-Host "RAM:"
+          Get-CimInstance Win32_ComputerSystem |
+            Select-Object TotalPhysicalMemory
