@@ -1,4 +1,4 @@
-name: Windows RDP Test
+name: Windows RDP Login Test
 
 on:
   workflow_dispatch:
@@ -14,6 +14,7 @@ jobs:
           Write-Host "WINDOWS RUNNER ONLINE"
           Write-Host "Computer: $env:COMPUTERNAME"
 
+          Write-Host "OS:"
           Get-CimInstance Win32_OperatingSystem |
             Select-Object Caption, Version, OSArchitecture
 
@@ -28,6 +29,38 @@ jobs:
         uses: tailscale/github-action@v4
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Create temporary RDP user
+        shell: pwsh
+        env:
+          RDP_PASSWORD: ${{ secrets.RDP_PASSWORD }}
+        run: |
+          Write-Host "CREATING RDP USER"
+
+          $existing = Get-LocalUser -Name "CloudWorker" -ErrorAction SilentlyContinue
+
+          if ($existing) {
+              Remove-LocalUser -Name "CloudWorker"
+          }
+
+          $securePassword = ConvertTo-SecureString `
+            $env:RDP_PASSWORD `
+            -AsPlainText `
+            -Force
+
+          New-LocalUser `
+            -Name "CloudWorker" `
+            -Password $securePassword `
+            -Description "Temporary RDP test user" `
+            -PasswordNeverExpires
+
+          Add-LocalGroupMember `
+            -Group "Remote Desktop Users" `
+            -Member "CloudWorker"
+
+          Write-Host "RDP USER CREATED"
+          Write-Host "Username: CloudWorker"
+          Write-Host "Password: stored in GitHub secret RDP_PASSWORD"
 
       - name: Enable Remote Desktop
         shell: pwsh
@@ -52,8 +85,10 @@ jobs:
           Get-Service "TermService" |
             Select-Object Status, StartType, Name
 
-          Write-Host "RDP PORT:"
-          Test-NetConnection -ComputerName localhost -Port 3389
+          Write-Host "RDP PORT TEST:"
+          Test-NetConnection `
+            -ComputerName 127.0.0.1 `
+            -Port 3389
 
       - name: Show Tailscale address
         shell: pwsh
@@ -66,11 +101,20 @@ jobs:
           tailscale ip
 
           Write-Host ""
-          Write-Host "RDP TEST:"
-          Test-NetConnection -ComputerName 127.0.0.1 -Port 3389
+          Write-Host "RDP PORT TEST:"
+          Test-NetConnection `
+            -ComputerName 127.0.0.1 `
+            -Port 3389
 
           Write-Host ""
+          Write-Host "========================================"
+          Write-Host "RDP LOGIN INFORMATION"
+          Write-Host "Username: CloudWorker"
+          Write-Host "Password: GitHub secret RDP_PASSWORD"
+          Write-Host "========================================"
+          Write-Host ""
           Write-Host "KEEPING RUNNER ALIVE FOR 15 MINUTES"
-          Write-Host "DO NOT CLOSE THIS WORKFLOW"
+          Write-Host "CONNECT FROM YOUR LAPTOP NOW"
+          Write-Host ""
 
           Start-Sleep -Seconds 900
