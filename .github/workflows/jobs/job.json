@@ -1,0 +1,33 @@
+{
+  "job_id": "job-001",
+  "job_type": "module_script",
+  "title": "Roblox Inventory Module",
+  "description": "Create a reusable Roblox ModuleScript for managing a player's inventory.",
+  "requirements": [
+    "Store inventory items by item name.",
+    "Add items to the inventory.",
+    "Remove items from the inventory.",
+    "Check whether an item exists.",
+    "Get the quantity of an item.",
+    "Clear the inventory.",
+    "Return a copy of the inventory data.",
+    "Use clean reusable Luau code.",
+    "Do not depend on Roblox services for the core inventory logic."
+  ],
+  "acceptance_tests": [
+    "Adding an item increases its quantity.",
+    "Removing an item decreases its quantity.",
+    "Removing the final quantity removes the item.",
+    "Checking an existing item returns true.",
+    "Checking a missing item returns false.",
+    "Getting quantity returns the correct number.",
+    "Clearing the inventory removes all items.",
+    "The module can be required and used without errors."
+  ],
+  "deliverables": [
+    "InventoryModule.lua",
+    "README.md",
+    "validation.luau"
+  ],
+  "output_format": "zip"
+}
